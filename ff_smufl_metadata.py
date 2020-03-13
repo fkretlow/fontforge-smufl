@@ -102,11 +102,15 @@ def smufl_codepoint(glyph):
     codepoint = 'U+' + hex(glyph.unicode)[2:].upper()
     return codepoint
 
-def smufl_canonical_name(glyph):
+def smufl_canonical_name(glyph, fallback=True):
+    codepoint = smufl_codepoint(glyph)
     try:
-        return SMUFL_CODEPOINT_TO_NAME[smufl_codepoint(glyph)]
+        return SMUFL_CODEPOINT_TO_NAME[codepoint]
     except KeyError:
-        raise ValueError('there’s no SMuFL character defined at this codepoint')
+        if fallback:
+            return glyph.glyphname
+        else:
+            raise ValueError(f'there’s no SMuFL character defined at codepoint {codepoint}.')
 
 def to_spaces(i):
     return round(i/250, 3)
@@ -227,10 +231,7 @@ class SmuflMetadata(object):
                 for name in substitute_names:
                     substitute_char = self.font[name]
                     codepoint = smufl_codepoint(substitute_char)
-                    try:
-                        name = smufl_canonical_name(substitute_char)
-                    # if there's no canonical name, use the glyphname as is
-                    except ValueError: pass
+                    name = smufl_canonical_name(substitute_char)
 
                     char_alternates.append({
                         'codepoint': codepoint,
