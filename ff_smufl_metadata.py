@@ -97,14 +97,14 @@ with io.open('glyphnames.json', 'r') as file:
 
 
 # utility functions
-def get_smufl_codepoint(glyph):
+def smufl_codepoint(glyph):
     # unicode 57344 --> 'U+E000'
     codepoint = 'U+' + hex(glyph.unicode)[2:].upper()
     return codepoint
 
-def get_smufl_name(glyph):
+def smufl_canonical_name(glyph):
     try:
-        return SMUFL_CODEPOINT_TO_NAME[get_smufl_codepoint(glyph)]
+        return SMUFL_CODEPOINT_TO_NAME[smufl_codepoint(glyph)]
     except KeyError:
         raise ValueError('there’s no SMuFL character defined at this codepoint')
 
@@ -141,12 +141,12 @@ class SmuflMetadata(object):
         d['fontName'] = self.fontName
         d['fontVersion'] = self.fontVersion
 
+        # We don't want to include empty dictionary entries so we need to
+        # check if there are values first.
         defaults = self.engravingDefaults
         if defaults:
             d['engravingDefaults'] = defaults
 
-        # We don't want to include empty dictionary entries so we need to
-        # check if there are values first.
         anchors = self.glyphsWithAnchors
         if anchors:
             d['glyphsWithAnchors'] = anchors
@@ -208,7 +208,7 @@ class SmuflMetadata(object):
                     char_anchors[anchor_name] = (x, y)
 
             if char_anchors:
-                char_name = get_smufl_name(char)
+                char_name = smufl_canonical_name(char)
                 all_anchors[char_name] = char_anchors
 
         return all_anchors
@@ -221,18 +221,24 @@ class SmuflMetadata(object):
         for char in self.characters:
             char_alternates = []
 
-            # Select all lookup tables for this character of type 'AltSubs'
+            # select all lookup tables for this character of type 'AltSubs'
             for table in (table for table in char.getPosSub('*') if table[1]=='AltSubs'):
                 substitute_names = table[2:]
                 for name in substitute_names:
                     substitute_char = self.font[name]
+                    codepoint = smufl_codepoint(substitute_char)
+                    try:
+                        name = smufl_canonical_name(substitute_char)
+                    # if there's no canonical name, use the glyphname as is
+                    except ValueError: pass
+
                     char_alternates.append({
-                        'codepoint': get_smufl_codepoint(substitute_char),
-                        'name': get_smufl_name(substitute_char),
+                        'codepoint': codepoint,
+                        'name': name,
                     })
 
             if char_alternates:
-                char_name = get_smufl_name(char)
+                char_name = smufl_canonical_name(char)
                 char_alternates = {'alternates': char_alternates}
                 all_alternates[char_name] = char_alternates
 
@@ -243,7 +249,7 @@ class SmuflMetadata(object):
     def glyphBBoxes(self):
         all_bounding_boxes = {}
         for char in self.characters:
-            char_name = get_smufl_name(char)
+            char_name = smufl_canonical_name(char)
             xmin, ymin, xmax, ymax = (to_spaces(value) for value in char.boundingBox())
             bounding_box = {'bBoxNE': (xmax, ymax), 'bBoxSW': (xmin, ymin)}
             all_bounding_boxes[char_name] = bounding_box
@@ -255,13 +261,13 @@ class SmuflMetadata(object):
     def ligatures(self):
         all_ligatures = {}
         for char in self.characters:
-            char_name = get_smufl_name(char)
+            char_name = smufl_canonical_name(char)
 
-            # Select all lookup tables for this character of type 'Ligature'
+            # select all lookup tables for this character of type 'Ligature'
             for table in (table for table in char.getPosSub('*') if table[1]=='Ligature'):
                 component_names = [name for name in table[2:]]
                 all_ligatures[char_name] = {
-                    'codepoint': get_smufl_codepoint(char),
+                    'codepoint': smufl_codepoint(char),
                     'componentGlyphs': component_names,
                 }
 
