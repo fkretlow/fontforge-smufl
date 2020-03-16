@@ -91,9 +91,13 @@ SMUFL_ANCHOR_NAMES = (
     'opticalCenter',
 )
 
-with io.open('glyphnames.json', 'r') as file:
-    glyphnames = json.load(file)
-    SMUFL_CODEPOINT_TO_NAME = {data['codepoint']: name for name, data in glyphnames.items()}
+try:
+    with io.open('glyphnames.json', 'r') as file:
+        glyphnames = json.load(file)
+        SMUFL_CODEPOINT_TO_NAME = {data['codepoint']: name for name, data in glyphnames.items()}
+except FileNotFoundError:
+    print("Couldn't find glyphnames.json.")
+    exit(1)
 
 
 # utility functions
@@ -109,8 +113,7 @@ def smufl_canonical_name(glyph, fallback=True):
     except KeyError:
         if fallback:
             return glyph.glyphname
-        else:
-            raise ValueError(f'there’s no SMuFL character defined at codepoint {codepoint}.')
+        raise ValueError(f'there’s no SMuFL character defined at codepoint {codepoint}.')
 
 def to_spaces(i):
     return round(i/250, 3)
@@ -147,10 +150,11 @@ class SmuflMetadata(object):
 
         # We don't want to include empty dictionary entries so we need to
         # check if there are values first.
-        defaults = self.engravingDefaults
-        if defaults:
-            d['engravingDefaults'] = defaults
+        if self.engravingDefaults:
+            d['engravingDefaults'] = self.engravingDefaults
 
+        # These attributes are actually function calls, we bind the return value
+        # before the check so we don't do the work twice.
         anchors = self.glyphsWithAnchors
         if anchors:
             d['glyphsWithAnchors'] = anchors
@@ -184,7 +188,7 @@ class SmuflMetadata(object):
 
     @property
     def characters(self):
-        # standard SMuFL characters are encoded from U+E000 to U+F3FF
+        # Standard SMuFL characters are encoded from U+E000 to U+F3FF.
         return (char for char in self.font.glyphs() if 57344 <= char.unicode <= 62463)
 
 
@@ -225,7 +229,7 @@ class SmuflMetadata(object):
         for char in self.characters:
             char_alternates = []
 
-            # select all lookup tables for this character of type 'AltSubs'
+            # Select all lookup tables for this character of type 'AltSubs'.
             for table in (table for table in char.getPosSub('*') if table[1]=='AltSubs'):
                 substitute_names = table[2:]
                 for name in substitute_names:
@@ -264,7 +268,7 @@ class SmuflMetadata(object):
         for char in self.characters:
             char_name = smufl_canonical_name(char)
 
-            # select all lookup tables for this character of type 'Ligature'
+            # Select all lookup tables for this character of type 'Ligature'.
             for table in (table for table in char.getPosSub('*') if table[1]=='Ligature'):
                 component_names = [name for name in table[2:]]
                 all_ligatures[char_name] = {
@@ -289,5 +293,6 @@ if __name__ == '__main__':
 
     metadata = SmuflMetadata(font, ENGRAVING_DEFAULTS)
     metadata.dump_json()
+    print(f"SMuFL metadata written to {metadata.fontName}.json.")
 
     font.close()
