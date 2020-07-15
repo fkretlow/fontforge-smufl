@@ -6,8 +6,8 @@ Download it [from the SMuFL repository](https://github.com/w3c/smufl/tree/gh-pag
 
 If all you need is a metadata file for your music font, copy the script and
 `glyphnames.json` to the folder where your font is saved and edit the
-`ENGRAVING_DEFAULTS` dictionary in the script as necessary. Then run the script with a
-Python 3 interpreter that has access to the fontforge module, e.g.:
+`ENGRAVING_DEFAULTS` dictionary in the script as necessary. Then run the script with an external
+Python 3 interpreter that has access to the fontforge module (the script does not work with Fontforge's internal script console):
 ```bash
 ffpython smufl_metadata.py myfont.sfd
 ```
