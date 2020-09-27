@@ -173,10 +173,24 @@ class SmuflFont(object):
         return _SmuflMetadata(self).asdict()
 
 
-    def rename_glyphs(self):
+    def rename_glyphs(self, warning=True):
         """
         Rename all available glyphs in the SMuFL range to their canonical names.
+        Attention! Batch renaming glyphs can mess up the font files.
         """
+        if warning:
+            print("SmuflFont.rename_glyphs()\n"
+                    "Warning: Batch renaming glyphs can mess up your font files. "
+                    "Be sure to have a backup before using this method. "
+                    "You can disable this warning by adding `warning=True` to the argument list of this method:\n"
+                    "    `<your_font>.rename_glyphs(warning=False)`\n")
+            choice = input("Do you want to rename glyphs now anyway? (Y/N) > ")
+            if not choice.upper() == "Y":
+                print("Renaming aborted. Returning to call site.")
+                return
+            else:
+                print("Continuing to rename glyphs.")
+
         for glyph in self:
             glyph.glyphname = SmuflFont.canonical_glyphname(glyph.unicode)
 
