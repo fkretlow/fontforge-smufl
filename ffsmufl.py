@@ -65,7 +65,7 @@ class SmuflFont(object):
         'opticalCenter',
     )
 
-    # Find glyphnames.json anywhere in the repository. If it's not there, explode.
+    # Find glyphnames.json anywhere in the repository. If it's not there, complain and abort.
     for p in Path('.').glob('**/glyphnames.json'):
         try:
             with io.open(p, 'r') as infile:
@@ -182,7 +182,7 @@ class SmuflFont(object):
             print("SmuflFont.rename_glyphs()\n"
                     "Warning: Batch renaming glyphs can mess up your font files. "
                     "Be sure to have a backup before using this method. "
-                    "You can disable this warning by adding `warning=True` to the argument list of this method:\n"
+                    "You can disable this warning by adding `warning=False` to the argument list of this method:\n"
                     "    `<your_font>.rename_glyphs(warning=False)`\n")
             choice = input("Do you want to rename glyphs now anyway? (Y/N) > ")
             if not choice.upper() == "Y":
@@ -337,3 +337,47 @@ class _SmuflMetadata(object):
                 }
 
         return all_ligatures
+
+
+# script for CLI usage
+if __name__ == "__main__":
+    import sys
+
+    if len(sys.argv) < 2:
+        print("USAGE: ffpython ffsmufl.py <relative/path/to/my/font>")
+        exit(1)
+
+    # Set these values as needed for your font project:
+    ENGRAVING_DEFAULTS = {
+        'arrowShaftThickness'        : 0.16,
+        'barlineSeparation'          : 0.6,
+        'beamSpacing'                : 0.33,
+        'beamThickness'              : 0.5,
+        'bracketThickness'           : 0.5,
+        'dashedBarlineDashLength'    : 0.67,
+        'dashedBarlineGapLength'     : 0.67,
+        'dashedBarlineThickness'     : 0.16,
+        'hairpinThickness'           : 0.16,
+        'legerLineExtension'         : 0.4,
+        'legerLineThickness'         : 0.1875,
+        'lyricLineThickness'         : 0.1,
+        'octaveLineThickness'        : 0.1875,
+        'pedalLineThickness'         : 0.16,
+        'repeatBarlineDotSeparation' : 0.16,
+        'repeatEndingLineThickness'  : 0.16,
+        'slurEndpointThickness'      : 0.125,
+        'slurMidpointThickness'      : 0.25,
+        'staffLineThickness'         : 0.125,
+        'stemThickness'              : 0.125,
+        'subBracketThickness'        : 0.16,
+        'textEnclosureThickness'     : 0.16,
+        'thickBarlineThickness'      : 0.5,
+        'thinBarlineThickness'       : 0.16,
+        'tieEndpointThickness'       : 0.125,
+        'tieMidpointThickness'       : 0.2,
+        'tupletBracketThickness'     : 0.125,
+    }
+
+    with SmuflFont(sys.argv[1]) as font:
+        font.engraving_defaults = ENGRAVING_DEFAULTS
+        font.export_metadata()

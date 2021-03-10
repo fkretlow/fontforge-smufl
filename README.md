@@ -1,30 +1,57 @@
-This script generates SMuFL metadata files from FontForge projects.
+The `SmuflFont` class defined in this module wraps SMuFL specific methods around fontforge.font
+objects.
 
-A copy of the `glyphnames.json` file from the SMuFL specification must be saved
-in the working directory.
-Download it [from the SMuFL repository](https://github.com/w3c/smufl/tree/gh-pages/metadata).
+A copy of the `glyphnames.json` file from the SMuFL specification must be saved in the same
+folder. Download it [from the SMuFL repository](https://github.com/w3c/smufl/tree/gh-pages/metadata).
 
-If all you need is a metadata file for your music font, copy the script and
-`glyphnames.json` to the folder where your font is saved and edit the
-`ENGRAVING_DEFAULTS` dictionary in the script as necessary. Then run the script with an external
-Python 3 interpreter that has access to the fontforge module (the script does not work with Fontforge's internal script console):
-```bash
-ffpython smufl_metadata.py myfont.sfd
+### Just give me that metadata already
+If all you need is a metadata file for your music font, copy `ffsmufl.py` and `glyphnames.json` to
+the folder where your font is saved and edit the `ENGRAVING_DEFAULTS` dictionary at the bottom of
+the script as necessary. Then run the script with an external Python 3 interpreter that has access
+to the fontforge module (the script does **not** work with Fontforge's internal script console).
+
+#### OS-dependant incantations:
+
+On Windows, assuming `ffpython.exe` is in your PATH:
+```
+ffpython ./ffsmufl.py ./myfont.sfd
 ```
 
+On Mac, assuming this monster is the path to your fontforge binary:
+```
+/Applications/FontForge.app/Contents/Resources/opt/local/bin/fontforge ./ffsmufl.py ./myfont.sfd
+```
+
+On Linux, assuming you have installed the Python bindings for Fontforge:
+```
+python3 ./ffsmufl.py ./path/to/my/font.ufo
+```
+
+### Advanced usage
+
 If you need to create font metadata as part of a more involved scripted procedure,
-you can import the `SmuflMetadata` class into your script:
+you can import the `SmuflFont` class into your script. The class is just a thin wrapper around a
+`fontforge.font` object that is accessible as the public `.font` member, so you can use the whole
+Fontforge API with it.
+
 ```Python
 import fontforge
-from ff_smufl_metadata import SmuflMetadata
+from ffsmufl import SmuflFont
 
-font = fontforge.open('myfont.sfd')
 
-# define your engraving defaults:
-defaults = { ... }
+# create a SMuFL font object in memory from your project files:
+with SmuflFont("path/to/my/font.ufo") as f:
 
-metadata = SmuflMetadata(font, defaults)
-metadata.dump_json()
+    # use the Fontforge API on the font member
+    for glyph in f.font:
+        ...
 
-font.close()
+    # set your engraving defaults
+    f.engraving_defaults = { ... }
+
+    # generate and export metadata
+    f.export_metadata()
+
+    # build the font itself
+    f.export_font()
 ```
