@@ -1,4 +1,4 @@
-The `SmuflFont` class defined in this module wraps SMuFL specific methods around fontforge.font
+The `SmuflFont` class defined in this module wraps SMuFL specific methods around `fontforge.font`
 objects.
 
 A copy of the `glyphnames.json` file from the SMuFL specification must be saved in the same
@@ -12,19 +12,19 @@ to the fontforge module (the script does **not** work with Fontforge's internal 
 
 #### OS-dependant incantations:
 
-On Windows, assuming `ffpython.exe` is in your PATH:
+On **Windows**, assuming `ffpython.exe` is in your PATH:
 ```
 ffpython ./ffsmufl.py ./myfont.sfd
 ```
 
-On Mac, assuming this monster is the path to your fontforge binary:
+On **Mac**, assuming this monster is the path to your fontforge binary:
 ```
 /Applications/FontForge.app/Contents/Resources/opt/local/bin/fontforge ./ffsmufl.py ./myfont.sfd
 ```
 
-On Linux, assuming you have installed the Python bindings for Fontforge:
+On **Linux**, assuming you have installed the Python bindings for Fontforge:
 ```
-python3 ./ffsmufl.py ./path/to/my/font.ufo
+python3 ./ffsmufl.py ./myfont.sfd
 ```
 
 ### Advanced usage
