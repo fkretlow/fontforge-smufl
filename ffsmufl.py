@@ -70,7 +70,7 @@ class SmuflFont(object):
         try:
             with io.open(p, 'r') as infile:
                 glyphnames = json.load(infile)
-                codepoint_to_name = {data['codepoint']: name for name, data in glyphnames.items()}
+                codepoint_to_name = { data['codepoint']: name for name, data in glyphnames.items() }
                 break
         except StopIteration:
             print("Couldn't find glyphnames.json.")
@@ -242,8 +242,7 @@ class _SmuflMetadata(object):
         d['fontName'] = self.font.fontname
         d['fontVersion'] = self.font.version
 
-        # We don't want to include empty dictionary entries so we check if
-        # there are values first.
+        # We don't want to include empty dictionary entries so we check if there are values first.
         defaults = self.engraving_defaults()
         if defaults: d['engravingDefaults'] = defaults
 
