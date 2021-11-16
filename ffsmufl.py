@@ -16,7 +16,7 @@ Example:
         font.export_metadata()
         font.export_font()
 
-Written by Florian Kretlow. Use, distribute and edit this file as you wish.
+Written by Florian Kretlow. Licensed under the MIT license.
 """
 import fontforge
 import io
